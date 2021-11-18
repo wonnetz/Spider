@@ -35,23 +35,57 @@ mkdir -p ~/hadoopdata/hdfs/datanode
 HOST=$(hostname)
 mkdir -p /softwares/tmpdata
 
-##! From this point on, you need to have the following files in your cwd !##
-##! core-site.xml, hdfs-site.xml, mapred-site.xml, and yarn-site.xml !##
-
 # Edits core-site.xml
-cp core-site.xml $HADOOP_HOME/etc/hadoop
-sed -i "s+<value>/home/ubuntu/Softwares/tmpdata</name>+<value>/home/$HOST/softwares/tmpdata</value>+g" $HADOOP_HOME/etc/core-site.xml
+sed -i "s+<configuration>+ +g" $HADOOP_HOME/etc/hadoop/core-site.xml
+sed -i "s+</configuration>+ +g" $HADOOP_HOME/etc/hadoop/core-site.xml
+echo '
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://localhost:9000</value>
+    </property>
+</configuration>' >> $HADOOP_HOME/etc/hadoop/core-site.xml
 
 # Edits hdfs-site.xml
-cp hdfs-site.xml $HADOOP_HOME/etc/hadoop
-sed -i "s+<value>/home/ubuntu/Softwares/dfsdata/namenode</value>+<value>/home/$HOST/hadoopdata/hdfs/namenode</value>" $HADOOP_HOME/etc/hadoop/hdfs-site.xml
-sed -i "s+<value>/home/ubuntu/Softwares/dfsdata/datanode</value>+<value>/home/$HOST/hadoopdata/hdfs/datanode</value>" $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+sed -i "s+<configuration>+ +g" $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+sed -i "s+</configuration>+ +g" $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+echo '
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+</configuration>' >> $HADOOP_HOME/etc/hadoop/hdfs-site.xml
 
 # Edits mapred-site.xml
-cp mapred-site.xml $HADOOP_HOME/etc/hadoop
+sed -i "s+<configuration>+ +g" $HADOOP_HOME/etc/hadoop/mapred-site.xml
+sed -i "s+</configuration>+ +g" $HADOOP_HOME/etc/hadoop/mapred-site.xml
+echo '
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+    <property>
+        <name>mapreduce.application.classpath</name>
+        <value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*</value>
+    </property>
+</configuration>' >> $HADOOP_HOME/etc/hadoop/mapred-site.xml
 
 # Edits yarn-site.xml
-cp yarn-site.xml $HADOOP_HOME/etc/hadoop
+sed -i "s+<configuration>+ +g" $HADOOP_HOME/etc/hadoop/yarn-site.xml
+sed -i "s+</configuration>+ +g" $HADOOP_HOME/etc/hadoop/yarn-site.xml
+echo '
+<configuration>
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.env-whitelist</name>
+        <value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME</value>
+    </property>
+</configuration>' >> $HADOOP_HOME/etc/hadoop/yarn-site.xml
 
 # Final step! 
 # Formats the cluster
